@@ -11,6 +11,7 @@ IANA_TLD_LIST_URL = "https://data.iana.org/TLD/tlds-alpha-by-domain.txt"
 MAX_WORKERS = 20
 DEFAULT_TIMEOUT = 3  # Default timeout for HTTPS checks
 
+
 def fetch_tlds():
     try:
         response = requests.get(IANA_TLD_LIST_URL, timeout=10)
@@ -25,11 +26,13 @@ def fetch_tlds():
         print(f"Failed to fetch TLDs: {e}")
         sys.exit(1)
 
+
 def save_tlds_to_file(tlds):
     with open(TLD_LIST_FILE, "w") as f:
         for tld in tlds:
             f.write(tld + "\n")
     print(f"Saved {len(tlds)} TLDs to {TLD_LIST_FILE}")
+
 
 def load_tlds_from_file():
     if not os.path.exists(TLD_LIST_FILE):
@@ -39,12 +42,14 @@ def load_tlds_from_file():
     with open(TLD_LIST_FILE, "r") as f:
         return [line.strip() for line in f if line.strip()]
 
+
 def check_domain(domain):
     try:
         socket.gethostbyname(domain)
         return domain
     except socket.gaierror:
         return None
+
 
 def check_https(domain, timeout):
     try:
@@ -53,6 +58,7 @@ def check_https(domain, timeout):
     except (socket.timeout, socket.error):
         return None
 
+
 def color_text(text, color):
     colors = {
         "green": "\033[92m",
@@ -60,6 +66,7 @@ def color_text(text, color):
         "reset": "\033[0m",
     }
     return f"{colors[color]}{text}{colors['reset']}"
+
 
 def print_help():
     help_text = """
@@ -85,10 +92,11 @@ Options:
 """
     print(help_text)
 
+
 def parse_args():
     args = sys.argv[1:]
     options = {
-        "mode": "search",   # or "input"
+        "mode": "search",  # or "input"
         "domain_base": None,
         "input_file": None,
         "check_site": False,
@@ -143,6 +151,7 @@ def parse_args():
 
     return options
 
+
 def run():
     options = parse_args()
 
@@ -166,11 +175,15 @@ def run():
         tlds = load_tlds_from_file()
         domains = [domain_base + tld for tld in tlds]
 
-        print(f"Searching domains for base '{domain_base}' with {MAX_WORKERS} threads...")
+        print(
+            f"Searching domains for base '{domain_base}' with {MAX_WORKERS} threads..."
+        )
 
         found_domains = []
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            future_to_domain = {executor.submit(check_domain, domain): domain for domain in domains}
+            future_to_domain = {
+                executor.submit(check_domain, domain): domain for domain in domains
+            }
 
             for future in as_completed(future_to_domain):
                 result = future.result()
@@ -187,11 +200,16 @@ def run():
             print(f"\nSaved {len(domains)} domains to {options['output_file']}")
 
     if options["check_site"]:
-        print(f"\nChecking HTTPS (port 443) on {len(domains)} domains (timeout {options['timeout']}s)...")
+        print(
+            f"\nChecking HTTPS (port 443) on {len(domains)} domains (timeout {options['timeout']}s)..."
+        )
 
         alive_domains = []
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            future_to_domain = {executor.submit(check_https, domain, options["timeout"]): domain for domain in domains}
+            future_to_domain = {
+                executor.submit(check_https, domain, options["timeout"]): domain
+                for domain in domains
+            }
 
             for future in as_completed(future_to_domain):
                 result = future.result()
@@ -204,6 +222,6 @@ def run():
 
         print(f"\n{len(alive_domains)} domains responded on port 443.")
 
+
 if __name__ == "__main__":
     run()
-

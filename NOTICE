@@ -1,0 +1,19 @@
+domainsearch
+Copyright (c) 2025 Jon Arnar Jonsson
+Licensed under the MIT License.
+
+---
+
+This project makes use of the following third-party libraries:
+
+- requests (Apache License 2.0)
+  https://github.com/psf/requests
+
+- Python Standard Library (PSF License)
+  https://docs.python.org/3/license.html
+
+---
+
+The requests library is used for downloading the official list of TLDs from IANA.
+The Python Standard Library modules (socket, concurrent.futures, etc.) are used for domain checks and concurrency.
+
